@@ -1,0 +1,12 @@
+Seguretat	Ús correcte de capçaleres (Headers) amb API Key o JWT.	          1,50
+Diversitat d'endpoints	Consum de rutes diferents (ex: llistat i detall).	          1,00
+Mapeig d'entitats	Conversió automàtica de JSON a objectes (Entitats, DTOs...).	          1,25
+Separació de fils	Les operacions de xarxa no bloquegen mai la interfície (UI).	          0,50
+Control del cicle de vida	Gestió eficient de fils, Pools o workers.	          0,50
+Lògica asíncrona	Ús de mecanismes d'asíncronia (async/await, promeses…)	          1,00
+Caché / Memòria	Evita peticions repetides guardant dades o imatges en memòria/local.	          0,50
+Gestió de fitxers	Càrrega d'imatges/fitxers de l'API amb gestió de memòria.	          1,00
+Maneig d'HTTP i Xarxa	Control de codis d'error (4xx, 5xx) i manca de connexió.	          1,00
+Javadoc o similars	Documentació tècnica dels mètodes i la lògica multifil.	          0,75
+README	Explicació clara de l'execució, l'API triada i dependències.	          0,50
+Estil i Nomenclatura	Codi net (Clean Code), sense codi mort ni logs brossa.	          0,50
