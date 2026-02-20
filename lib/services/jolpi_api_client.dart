@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'api_exception.dart';
@@ -35,13 +34,7 @@ class JolpiApiClient {
     String endpoint, {
     Map<String, String> queryParameters = const <String, String>{},
   }) async {
-    final result = await _request(
-      _baseUrl,
-      endpoint,
-      queryParameters: queryParameters,
-    );
-    _logApi('JOLPI', _baseUrl, endpoint, queryParameters);
-    return result;
+    return _request(_baseUrl, endpoint, queryParameters: queryParameters);
   }
 
   /// Implementación interna de la petición HTTP.
@@ -89,21 +82,5 @@ class JolpiApiClient {
   /// Libera recursos del cliente HTTP.
   void dispose() {
     _client.close();
-  }
-
-  /// Log de diagnóstico para entorno debug.
-  void _logApi(
-    String source,
-    String baseUrl,
-    String endpoint,
-    Map<String, String> queryParameters,
-  ) {
-    if (!kDebugMode) {
-      return;
-    }
-    final uri = Uri.parse('$baseUrl$endpoint').replace(
-      queryParameters: queryParameters.isEmpty ? null : queryParameters,
-    );
-    debugPrint('[F1 API] source=$source uri=$uri');
   }
 }
