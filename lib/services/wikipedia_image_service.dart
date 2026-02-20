@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:core';
 
 import 'package:http/http.dart' as http;
 
@@ -25,12 +26,75 @@ class WikipediaImageService {
   ///
   /// [cacheKey] identifica de forma única al piloto para cachear.
   /// [fullName] se usa para construir el `title` del endpoint summary.
-  Future<String?> getDriverImageUrl(String cacheKey, String fullName) {
-    return _getImageUrl(cacheKey, fullName);
+  Future<String?> getDriverImageUrl(
+    String cacheKey,
+    String fullName, {
+    String? wikiUrl,
+  }) async {
+    return _getImageUrlWithFallback(
+      cacheKey: cacheKey,
+      displayName: fullName,
+      wikiUrl: wikiUrl,
+    );
+  }
+
+  /// Obtiene la URL de imagen de un equipo.
+  ///
+  /// Intenta primero usando [wikiUrl] y, si falla, usa [teamName].
+  Future<String?> getTeamImageUrl(
+    String cacheKey,
+    String teamName, {
+    String? wikiUrl,
+  }) async {
+    return _getImageUrlWithFallback(
+      cacheKey: cacheKey,
+      displayName: teamName,
+      wikiUrl: wikiUrl,
+    );
+  }
+
+  /// Obtiene la URL de imagen de un circuito.
+  ///
+  /// Intenta primero usando [wikiUrl] y, si falla, usa [circuitName].
+  Future<String?> getCircuitImageUrl(
+    String cacheKey,
+    String circuitName, {
+    String? wikiUrl,
+  }) async {
+    return _getImageUrlWithFallback(
+      cacheKey: cacheKey,
+      displayName: circuitName,
+      wikiUrl: wikiUrl,
+    );
+  }
+
+  Future<String?> _getImageUrlWithFallback({
+    required String cacheKey,
+    required String displayName,
+    required String? wikiUrl,
+  }) async {
+    final titleFromWikiUrl = _extractWikipediaTitle(wikiUrl);
+
+    if (titleFromWikiUrl != null && titleFromWikiUrl.isNotEmpty) {
+      final fromWikiUrl = await _getImageUrl(
+        cacheKey,
+        titleFromWikiUrl,
+        alreadyEncodedTitle: true,
+      );
+      if (fromWikiUrl != null && fromWikiUrl.isNotEmpty) {
+        return fromWikiUrl;
+      }
+    }
+
+    return _getImageUrl(cacheKey, displayName);
   }
 
   /// Resuelve primero desde caché y, si no existe, consulta la API.
-  Future<String?> _getImageUrl(String cacheKey, String titleName) {
+  Future<String?> _getImageUrl(
+    String cacheKey,
+    String titleName, {
+    bool alreadyEncodedTitle = false,
+  }) {
     if (_cache.containsKey(cacheKey)) {
       return Future<String?>.value(_cache[cacheKey]);
     }
@@ -40,7 +104,11 @@ class WikipediaImageService {
       return pending;
     }
 
-    final future = _fetchImageUrl(cacheKey, titleName);
+    final future = _fetchImageUrl(
+      cacheKey,
+      titleName,
+      alreadyEncodedTitle: alreadyEncodedTitle,
+    );
     _inFlight[cacheKey] = future;
     return future;
   }
@@ -48,9 +116,15 @@ class WikipediaImageService {
   /// Consulta Wikipedia summary para obtener una URL de imagen.
   ///
   /// Prioriza `originalimage.source` y usa `thumbnail.source` como fallback.
-  Future<String?> _fetchImageUrl(String cacheKey, String titleName) async {
+  Future<String?> _fetchImageUrl(
+    String cacheKey,
+    String titleName, {
+    required bool alreadyEncodedTitle,
+  }) async {
     try {
-      final title = Uri.encodeComponent(titleName.trim().replaceAll(' ', '_'));
+      final title = alreadyEncodedTitle
+          ? titleName
+          : Uri.encodeComponent(titleName.trim().replaceAll(' ', '_'));
       final uri = Uri.parse(
         'https://en.wikipedia.org/api/rest_v1/page/summary/$title',
       );
@@ -90,6 +164,27 @@ class WikipediaImageService {
       return null;
     } finally {
       _inFlight.remove(cacheKey);
+    }
+  }
+
+  /// Extrae el título de Wikipedia desde una URL completa.
+  String? _extractWikipediaTitle(String? wikiUrl) {
+    if (wikiUrl == null || wikiUrl.trim().isEmpty) {
+      return null;
+    }
+
+    try {
+      final uri = Uri.parse(wikiUrl);
+      if (uri.pathSegments.isEmpty) {
+        return null;
+      }
+      final lastSegment = uri.pathSegments.last;
+      if (lastSegment.isEmpty) {
+        return null;
+      }
+      return lastSegment;
+    } catch (_) {
+      return null;
     }
   }
 

@@ -119,7 +119,11 @@ class _DriverAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String?>(
-      future: imageService.getDriverImageUrl(driver.id, driver.name),
+      future: imageService.getDriverImageUrl(
+        driver.id,
+        driver.name,
+        wikiUrl: driver.wikiUrl,
+      ),
       builder: (context, snapshot) {
         final imageUrl = snapshot.data;
 

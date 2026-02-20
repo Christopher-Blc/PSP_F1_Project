@@ -1,37 +1,37 @@
-import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 
 import '../components/information_card.dart';
-import '../models/driver.dart';
+import '../models/team.dart';
 import '../services/wikipedia_image_service.dart';
 
-/// Pantalla de detalle de un piloto.
-class DriverDetailScreen extends StatelessWidget {
-  /// Crea la vista de detalle del [driver] seleccionado.
-  const DriverDetailScreen({
+/// Pantalla de detalle de un equipo.
+class TeamDetailScreen extends StatelessWidget {
+  /// Crea la vista de detalle del [team] seleccionado.
+  const TeamDetailScreen({
     super.key,
-    required this.driver,
+    required this.team,
     required this.imageService,
   });
 
-  /// Entidad de piloto a mostrar.
-  final Driver driver;
+  /// Entidad de equipo a mostrar.
+  final Team team;
 
-  /// Servicio que resuelve y cachea la imagen del piloto.
+  /// Servicio que resuelve y cachea la imagen del equipo.
   final WikipediaImageService imageService;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(driver.name)),
+      appBar: AppBar(title: Text(team.name)),
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: <Widget>[
           FutureBuilder<String?>(
-            future: imageService.getDriverImageUrl(
-              driver.id,
-              driver.name,
-              wikiUrl: driver.wikiUrl,
+            future: imageService.getTeamImageUrl(
+              team.id,
+              team.name,
+              wikiUrl: team.wikiUrl,
             ),
             builder: (context, snapshot) {
               final imageUrl = snapshot.data;
@@ -46,7 +46,7 @@ class DriverDetailScreen extends StatelessWidget {
                     ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Center(child: Icon(Icons.person, size: 80)),
+                  child: const Center(child: Icon(Icons.groups, size: 80)),
                 );
               }
 
@@ -67,7 +67,7 @@ class DriverDetailScreen extends StatelessWidget {
                           context,
                         ).colorScheme.surfaceContainerHighest,
                         child: const Center(
-                          child: Icon(Icons.person, size: 80),
+                          child: Icon(Icons.groups, size: 80),
                         ),
                       ),
                     ),
@@ -85,11 +85,11 @@ class DriverDetailScreen extends StatelessWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      const CircleAvatar(child: Icon(Icons.person)),
+                      const CircleAvatar(child: Icon(Icons.groups)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          driver.name,
+                          team.name,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ),
@@ -100,30 +100,18 @@ class DriverDetailScreen extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 8,
                     children: <Widget>[
-                      InformationCard(label: 'ID', value: driver.id),
+                      InformationCard(label: 'ID', value: team.id),
                       InformationCard(
-                        label: 'Número',
-                        value: driver.number?.toString() ?? '-',
-                      ),
-                      InformationCard(
-                        label: 'Código',
-                        value: driver.code ?? '-',
-                      ),
-                      InformationCard(
-                        label: 'País',
-                        value: driver.country ?? '-',
-                      ),
-                      InformationCard(
-                        label: 'Nacimiento',
-                        value: driver.birthDate ?? '-',
+                        label: 'Country',
+                        value: team.country ?? '-',
                       ),
                     ],
                   ),
-                  if (driver.wikiUrl != null &&
-                      driver.wikiUrl!.isNotEmpty) ...<Widget>[
+                  if (team.wikiUrl != null &&
+                      team.wikiUrl!.isNotEmpty) ...<Widget>[
                     const SizedBox(height: 12),
                     Text(
-                      driver.wikiUrl!,
+                      team.wikiUrl!,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],

@@ -1,37 +1,37 @@
-import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 
 import '../components/information_card.dart';
-import '../models/driver.dart';
+import '../models/circuit.dart';
 import '../services/wikipedia_image_service.dart';
 
-/// Pantalla de detalle de un piloto.
-class DriverDetailScreen extends StatelessWidget {
-  /// Crea la vista de detalle del [driver] seleccionado.
-  const DriverDetailScreen({
+/// Pantalla de detalle de un circuito.
+class CircuitDetailScreen extends StatelessWidget {
+  /// Crea la vista de detalle del [circuit] seleccionado.
+  const CircuitDetailScreen({
     super.key,
-    required this.driver,
+    required this.circuit,
     required this.imageService,
   });
 
-  /// Entidad de piloto a mostrar.
-  final Driver driver;
+  /// Entidad de circuito a mostrar.
+  final Circuit circuit;
 
-  /// Servicio que resuelve y cachea la imagen del piloto.
+  /// Servicio que resuelve y cachea la imagen del circuito.
   final WikipediaImageService imageService;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(driver.name)),
+      appBar: AppBar(title: Text(circuit.name)),
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: <Widget>[
           FutureBuilder<String?>(
-            future: imageService.getDriverImageUrl(
-              driver.id,
-              driver.name,
-              wikiUrl: driver.wikiUrl,
+            future: imageService.getCircuitImageUrl(
+              circuit.id,
+              circuit.name,
+              wikiUrl: circuit.wikiUrl,
             ),
             builder: (context, snapshot) {
               final imageUrl = snapshot.data;
@@ -46,7 +46,7 @@ class DriverDetailScreen extends StatelessWidget {
                     ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Center(child: Icon(Icons.person, size: 80)),
+                  child: const Center(child: Icon(Icons.route, size: 80)),
                 );
               }
 
@@ -66,9 +66,7 @@ class DriverDetailScreen extends StatelessWidget {
                         color: Theme.of(
                           context,
                         ).colorScheme.surfaceContainerHighest,
-                        child: const Center(
-                          child: Icon(Icons.person, size: 80),
-                        ),
+                        child: const Center(child: Icon(Icons.route, size: 80)),
                       ),
                     ),
                   ),
@@ -85,11 +83,11 @@ class DriverDetailScreen extends StatelessWidget {
                 children: <Widget>[
                   Row(
                     children: <Widget>[
-                      const CircleAvatar(child: Icon(Icons.person)),
+                      const CircleAvatar(child: Icon(Icons.route)),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          driver.name,
+                          circuit.name,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ),
@@ -100,30 +98,30 @@ class DriverDetailScreen extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 8,
                     children: <Widget>[
-                      InformationCard(label: 'ID', value: driver.id),
+                      InformationCard(label: 'ID', value: circuit.id),
                       InformationCard(
-                        label: 'Número',
-                        value: driver.number?.toString() ?? '-',
-                      ),
-                      InformationCard(
-                        label: 'Código',
-                        value: driver.code ?? '-',
+                        label: 'Ciudad',
+                        value: circuit.city ?? '-',
                       ),
                       InformationCard(
                         label: 'País',
-                        value: driver.country ?? '-',
+                        value: circuit.country ?? '-',
                       ),
                       InformationCard(
-                        label: 'Nacimiento',
-                        value: driver.birthDate ?? '-',
+                        label: 'Lat',
+                        value: circuit.latitude ?? '-',
+                      ),
+                      InformationCard(
+                        label: 'Long',
+                        value: circuit.longitude ?? '-',
                       ),
                     ],
                   ),
-                  if (driver.wikiUrl != null &&
-                      driver.wikiUrl!.isNotEmpty) ...<Widget>[
+                  if (circuit.wikiUrl != null &&
+                      circuit.wikiUrl!.isNotEmpty) ...<Widget>[
                     const SizedBox(height: 12),
                     Text(
-                      driver.wikiUrl!,
+                      circuit.wikiUrl!,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../components/error_view.dart';
-import '../components/information_card.dart';
 import '../models/team.dart';
 import '../repositories/f1_repository.dart';
+import '../services/wikipedia_image_service.dart';
+import 'team_detail_screen.dart';
 
 /// Pantalla de equipos de la temporada actual.
 class TeamsScreen extends StatefulWidget {
@@ -20,11 +22,19 @@ class TeamsScreen extends StatefulWidget {
 /// Estado interno de [TeamsScreen].
 class _TeamsScreenState extends State<TeamsScreen> {
   late Future<List<Team>> _futureTeams;
+  late final WikipediaImageService _wikiImageService;
 
   @override
   void initState() {
     super.initState();
+    _wikiImageService = WikipediaImageService();
     _futureTeams = widget.repository.getTeams();
+  }
+
+  @override
+  void dispose() {
+    _wikiImageService.dispose();
+    super.dispose();
   }
 
   /// Recarga la lista de equipos de forma asíncrona.
@@ -60,60 +70,73 @@ class _TeamsScreenState extends State<TeamsScreen> {
               return const Center(child: Text('No teams available.'));
             }
 
-            return ListView.builder(
+            return ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(12),
               itemCount: teams.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final team = teams[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            const CircleAvatar(child: Icon(Icons.groups)),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                team.name,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: <Widget>[
-                            InformationCard(label: 'ID', value: team.id),
-                            InformationCard(
-                              label: 'Country',
-                              value: team.country ?? '-',
-                            ),
-                          ],
-                        ),
-                        if (team.wikiUrl != null &&
-                            team.wikiUrl!.isNotEmpty) ...<Widget>[
-                          const SizedBox(height: 10),
-                          Text(
-                            team.wikiUrl!,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ],
-                    ),
+                return ListTile(
+                  leading: _TeamAvatar(
+                    team: team,
+                    imageService: _wikiImageService,
                   ),
+                  title: Text('${index + 1}. ${team.name}.'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => TeamDetailScreen(
+                          team: team,
+                          imageService: _wikiImageService,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             );
           },
         ),
       ),
+    );
+  }
+}
+
+class _TeamAvatar extends StatelessWidget {
+  const _TeamAvatar({required this.team, required this.imageService});
+
+  final Team team;
+  final WikipediaImageService imageService;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: imageService.getTeamImageUrl(
+        team.id,
+        team.name,
+        wikiUrl: team.wikiUrl,
+      ),
+      builder: (context, snapshot) {
+        final imageUrl = snapshot.data;
+
+        if (imageUrl == null || imageUrl.isEmpty) {
+          return const CircleAvatar(child: Icon(Icons.groups));
+        }
+
+        return ClipOval(
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            width: 40,
+            height: 40,
+            fit: BoxFit.cover,
+            placeholder: (context, url) =>
+                const CircleAvatar(child: Icon(Icons.groups)),
+            errorWidget: (context, url, error) =>
+                const CircleAvatar(child: Icon(Icons.groups)),
+          ),
+        );
+      },
     );
   }
 }

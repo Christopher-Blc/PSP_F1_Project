@@ -63,7 +63,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'F1 API',
+      title: 'F1 2026 - Welcome to the season!',
       theme: ThemeData(
         colorScheme: const ColorScheme(
           brightness: Brightness.dark,
